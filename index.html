@@ -11,7 +11,24 @@
         --blue-soft: #38bdf8;
         --card-bg: rgba(15, 23, 42, 0.85);
         --danger: #ef4444;
-    }
+ /* تنسيق أسماء المواد الجديد */
+.subject-card label {
+    display: block;
+    color: var(--blue-soft); /* استخدام اللون الأزرق الموجود في مشروعك */
+    font-weight: bold;
+    margin-bottom: 10px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-style: preserve-3d;
+    perspective: 1000px;
+}
+
+/* تأثير 3D عند تمرير الماوس */
+.subject-card:hover label {
+    color: var(--accent); /* يتغير للذهبي عند الحوم فوقه */
+    transform: translateZ(30px) rotateX(10deg);
+    text-shadow: 0 5px 15px rgba(56, 189, 248, 0.4);
+} 
+  }
     body {
         font-family: 'Segoe UI', Tahoma, sans-serif;
         background: var(--primary);
