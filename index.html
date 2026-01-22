@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>حاسبة المعدل الجامعي - MI Result Hub </title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
     :root {
         --primary: #020617;
@@ -15,7 +16,7 @@
     body {
         font-family: 'Segoe UI', Tahoma, sans-serif;
         background: var(--primary);
-        margin: 0; color: #f8fafc; min-height: 100vh; padding-bottom: 100px;
+        margin: 0; color: #f8fafc; min-height: 100vh; padding-bottom: 50px;
         overflow-x: hidden;
     }
 
@@ -34,10 +35,252 @@
         border-bottom: 3px solid var(--accent);
         position: relative; z-index: 10;
     }
+
     main { max-width: 850px; margin: 30px auto; padding: 0 20px; position: relative; z-index: 10; }
     h2 { color: var(--accent); border-right: 4px solid var(--accent); padding-right: 15px; margin-top: 40px; }
     
     .module {
+        background: var(--card-bg);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 20px; margin-bottom: 20px; border-radius: 15px;
+        transition: 0.3s ease; position: relative;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        perspective: 1000px;
+    }
+
+    .module-header { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+    
+    .coef-circle {
+        background: var(--accent); color: #000;
+        width: 28px; height: 28px; border-radius: 50%;
+        display: flex; justify-content: center; align-items: center;
+        font-weight: bold; font-size: 14px;
+    }
+
+    .module h3 { 
+        color: var(--blue-soft) !important; 
+        margin: 0; 
+        font-size: 1.1rem; 
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        transform-style: preserve-3d;
+        display: inline-block;
+    }
+
+    .module:hover h3 {
+        color: var(--accent) !important;
+        transform: translateZ(30px) rotateX(10deg);
+        text-shadow: 0 5px 15px rgba(56, 189, 248, 0.4);
+    }
+    
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; }
+    label { display: block; font-size: 0.85rem; color: #cbd5e1; margin-bottom: 5px; }
+    
+    input {
+        width: 100%; padding: 10px; background: #020617;
+        border: 1px solid #334155; border-radius: 6px; color: #fff; box-sizing: border-box;
+    }
+    input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+
+    /* --- التعديل: تواصل معنا قائمة عمودية --- */
+    .social-footer {
+        background: rgba(15, 23, 42, 0.95);
+        border-top: 1px solid var(--accent);
+        padding: 40px 20px; text-align: center; margin-top: 60px;
+    }
+    .footer-list {
+        display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 15px;
+    }
+    .contact-row {
+        display: flex; align-items: center; text-decoration: none; width: 100%; max-width: 280px; gap: 15px; transition: 0.3s;
+    }
+    .icon-box {
+        width: 45px; height: 45px; background: #020617; border: 1px solid var(--blue-soft);
+        color: var(--blue-soft); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
+    }
+    .contact-text { color: #f8fafc; font-size: 1rem; }
+    .contact-row:hover .icon-box { background: var(--accent); color: #000; border-color: var(--accent); }
+    .contact-row:hover .contact-text { color: var(--accent); }
+
+    .sticky-actions {
+        position: fixed; bottom: 0; left: 0; right: 0;
+        background: rgba(15, 23, 42, 0.95);
+        padding: 15px 20px; display: flex; gap: 15px;
+        box-shadow: 0 -10px 30px rgba(0,0,0,0.5); z-index: 100;
+    }
+    button { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .btn-calc { background: var(--accent); color: #000; }
+    .btn-add { background: #334155; color: #fff; border: 1px solid var(--blue-soft); }
+    .btn-lang {
+        background: transparent; border: 1px solid var(--accent); color: var(--accent);
+        padding: 5px 15px; position: absolute; top: 20px; left: 20px; z-index: 500; border-radius: 5px;
+    }
+
+    /* --- التعديل: زر الحذف يتحرك بتغير اللغة --- */
+    .btn-delete {
+        background: var(--danger); color: white; width: 30px; height: 30px;
+        border-radius: 8px; position: absolute; top: 15px;
+        display: flex; justify-content: center; align-items: center; cursor: pointer;
+    }
+    html[dir="rtl"] .btn-delete { left: 15px; }
+    html[dir="ltr"] .btn-delete { right: 15px; }
+
+    /* --- التعديل: زر حذف TP و TD داخل المادة المضافة --- */
+    .field-remove {
+        font-size: 0.7rem; color: var(--danger); cursor: pointer; display: block; margin-top: 5px; text-decoration: underline;
+    }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<button class="btn-lang" onclick="toggleLanguage()">AR / EN</button>
+
+<header>
+    <h1 data-t="title">University Semester Calculator</h1>
+    <p data-t="subtitle">Official Academic Record Generator</p>
+</header>
+
+<main>
+    <h2 data-t="personal">Student Identity</h2>
+    <div class="module">
+        <div class="grid">
+            <div><label data-t="name">Full Name</label><input id="studentName"></div>
+            <div><label data-t="reg">Reg Number</label><input id="regNumber"></div>
+            <div><label data-t="major">Major</label><input id="majorInput" value="Math et Informatique" readonly style="background: #1e293b; color: var(--accent);"></div>
+            <div><label data-t="year">Year</label><input id="yearInput" value="2025/2026" readonly style="background: #1e293b; color: var(--accent);"></div>
+        </div>
+    </div>
+
+    <h2 data-t="modules">Course Modules</h2>
+    <div id="defaultModules">
+        <div class="module"><div class="module-header"><div class="coef-circle">5</div><h3 data-t="m1">Algorithms 💻</h3></div><div class="grid"><div><label data-t="td">TD</label><input type="number" id="td1" step="0.01"></div><div><label data-t="tp">TP</label><input type="number" id="tp1" step="0.01"></div><div><label data-t="exam">Exam</label><input type="number" id="ex1" step="0.01"></div></div></div>
+        <div class="module"><div class="module-header"><div class="coef-circle">4</div><h3 data-t="m2">Mathematical Analysis 📊</h3></div><div class="grid"><div><label data-t="td">TD</label><input type="number" id="td2" step="0.01"></div><div><label data-t="exam">Exam</label><input type="number" id="ex2" step="0.01"></div></div></div>
+        <div class="module"><div class="module-header"><div class="coef-circle">3</div><h3 data-t="m3">Machine Structure ⌨️</h3></div><div class="grid"><div><label data-t="td">TD</label><input type="number" id="td3" step="0.01"></div><div><label data-t="exam">Exam</label><input type="number" id="ex3" step="0.01"></div></div></div>
+        <div class="module"><div class="module-header"><div class="coef-circle">2</div><h3 data-t="m4">Algebra 🧮</h3></div><div class="grid"><div><label data-t="td">TD</label><input type="number" id="td4" step="0.01"></div><div><label data-t="exam">Exam</label><input type="number" id="ex4" step="0.01"></div></div></div>
+        <div class="module"><div class="module-header"><div class="coef-circle">2</div><h3 data-t="m5">General Electricity💡</h3></div><div class="grid"><div><label data-t="td">TD</label><input type="number" id="td5" step="0.01"></div><div><label data-t="exam">Exam</label><input type="number" id="ex5" step="0.01"></div></div></div>
+        <div class="module"><div class="module-header"><div class="coef-circle">1</div><h3 data-t="m6">English Language 🗣️</h3></div><div class="grid"><div><label data-t="exam">Exam</label><input type="number" id="ex6" step="0.01"></div></div></div>
+        <div class="module"><div class="module-header"><div class="coef-circle">1</div><h3 data-t="m7">Free Software 📟</h3></div><div class="grid"><div><label data-t="exam">Exam</label><input type="number" id="ex7" step="0.01"></div></div></div>
+    </div>
+
+    <div id="extraModules"></div>
+
+    <div class="sticky-actions">
+        <button class="btn-add" onclick="addModule()" data-t="add">+ Add Extra</button>
+        <button class="btn-calc" onclick="calculate()" data-t="calc">Generate Certificate 📜</button>
+    </div>
+</main>
+
+<footer class="social-footer">
+    <p style="color:var(--accent); font-weight:bold;">: تواصل معنا عبر </p>
+    <div class="footer-list">
+        <a href="https://www.instagram.com/noureddine_officiel.08?igsh=MW94a3BoMThvbjB1Mw==" target="_blank" class="contact-row">
+            <div class="icon-box"><i class="fab fa-instagram"></i></div>
+            <span class="contact-text">Instagram</span>
+        </a>
+        <a href="https://t.me/kh_noureddine" target="_blank" class="contact-row">
+            <div class="icon-box"><i class="fab fa-telegram-plane"></i></div>
+            <span class="contact-text">Telegram</span>
+        </a>
+        <a href="mailto: university.noureddine@gmail.com" class="contact-row">
+            <div class="icon-box"><i class="fas fa-envelope"></i></div>
+            <span class="contact-text">Email Support</span>
+        </a>
+    </div>
+</footer>
+
+<script>
+let lang = localStorage.getItem('lang') || 'ar';
+const T = {
+    en: { title: 'Academic Record System', subtitle: 'Official Grade Generator', personal: 'Identity', modules: 'Course Grades', name: 'Full Name', reg: 'Reg Number', major: 'Major', year: 'Year', td: 'TD', tp: 'TP', exam: 'Exam', calc: 'Generate Certificate 📜', add: '+ Add Module', m1: 'Algorithms 💻', m2: 'Analysis 📊', m3: 'Structure ⌨️', m4: 'Algebra 🧮', m5: 'Electricity 💡', m6: 'English 🗣️', m7: 'Software 📟', err: 'Please fill all empty fields!', removeField: 'Delete' },
+    ar: { title: 'نظام السجل الأكاديمي', subtitle: 'مستخرج كشف النقاط الرسمي', personal: 'الهوية الشخصية', modules: 'المواد الدراسية', name: 'الاسم الكامل', reg: 'رقم التسجيل', major: 'التخصص', year: 'السنة الجامعية', td: 'أعمال موجهة', tp: 'أعمال تطبيقية', exam: 'امتحان', calc: 'استخراج الشهادة 📜', add: '+ إضافة مادة', m1: 'الخوارزميات 💻', m2: 'التحليل 📊', m3: 'بنية الآلة ⌨️', m4: 'الجبر 🧮', m5: 'الكهرباء 💡', m6: 'الإنجليزية 🗣️', m7: 'البرمجيات 📟', err: 'يرجى ملء جميع الخانات الفارغة!', removeField: 'حذف' }
+};
+
+function applyLang() {
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.querySelectorAll('[data-t]').forEach(e => e.innerText = T[lang][e.dataset.t]);
+}
+function toggleLanguage() { lang = lang === 'en' ? 'ar' : 'en'; localStorage.setItem('lang', lang); applyLang(); }
+
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+const symbols = "01<>{}[]+=-*/√π∫∑";
+const fontSize = 16;
+const columns = canvas.width / fontSize;
+const drops = Array(Math.floor(columns)).fill(1);
+
+function drawMatrix() {
+    ctx.fillStyle = "rgba(2, 6, 23, 0.1)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#d4af37"; ctx.font = fontSize + "px monospace";
+    drops.forEach((y, i) => {
+        const text = symbols[Math.floor(Math.random() * symbols.length)];
+        ctx.fillText(text, i * fontSize, y * fontSize);
+        if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+    });
+}
+setInterval(drawMatrix, 50);
+
+// التعديل: المادة المضافة الآن تحتوي على خيار حذف الحقول
+function addModule() {
+    const div = document.createElement('div');
+    div.className = 'module extra-item';
+    div.innerHTML = `
+        <div class="btn-delete" onclick="this.parentElement.remove()">🗑️</div>
+        <div class="module-header"><div class="coef-circle">?</div><h3>${lang === 'ar' ? 'مادة جديدة' : 'New Module'}</h3></div>
+        <div class="grid">
+            <div><label>${lang === 'ar' ? 'امتحان' : 'Exam'}</label><input type="number" class="ex-val" step="0.01"></div>
+            <div><label>TD</label><input type="number" class="td-val" step="0.01"><span class="field-remove" onclick="this.parentElement.remove()">${T[lang].removeField}</span></div>
+            <div><label>TP</label><input type="number" class="tp-val" step="0.01"><span class="field-remove" onclick="this.parentElement.remove()">${T[lang].removeField}</span></div>
+            <div><label>${lang === 'ar' ? 'معامل' : 'Coef'}</label><input type="number" class="coef-val" value="1" step="1"></div>
+        </div>`;
+    document.getElementById('extraModules').appendChild(div);
+}
+
+function calculate() {
+    const allInputs = document.querySelectorAll('main input:not([readonly])');
+    let isValid = true;
+    allInputs.forEach(i => { if(i.offsetParent !== null && i.value === "") { isValid = false; i.style.borderColor = "var(--danger)"; } else { i.style.borderColor = "#334155"; } });
+    if(!isValid) { alert(T[lang].err); return; }
+
+    const val = (id) => parseFloat(document.getElementById(id)?.value) || 0;
+    let sum = 0, sumCoef = 18;
+    sum += (((val('td1') + val('tp1')) / 2) * 0.4 + val('ex1') * 0.6) * 5;
+    sum += (val('td2') * 0.4 + val('ex2') * 0.6) * 4;
+    sum += (val('td3') * 0.4 + val('ex3') * 0.6) * 3;
+    sum += (val('td4') * 0.4 + val('ex4') * 0.6) * 2;
+    sum += (val('td5') * 0.4 + val('ex5') * 0.6) * 2;
+    sum += val('ex6') * 1 + val('ex7') * 1;
+
+    document.querySelectorAll('.extra-item').forEach(item => {
+        let ex = parseFloat(item.querySelector('.ex-val')?.value) || 0;
+        let tdIn = item.querySelector('.td-val');
+        let tpIn = item.querySelector('.tp-val');
+        let td = tdIn ? parseFloat(tdIn.value) || 0 : -1;
+        let tp = tpIn ? parseFloat(tpIn.value) || 0 : -1;
+        let c = parseFloat(item.querySelector('.coef-val').value) || 1;
+        let mAvg;
+        if (td !== -1 && tp !== -1) mAvg = ((td + tp) / 2) * 0.4 + ex * 0.6;
+        else if (td !== -1) mAvg = td * 0.4 + ex * 0.6;
+        else if (tp !== -1) mAvg = tp * 0.4 + ex * 0.6;
+        else mAvg = ex;
+        sum += (mAvg * c); sumCoef += c;
+    });
+
+    localStorage.setItem("avg", (sum / sumCoef).toFixed(2));
+    localStorage.setItem("name", document.getElementById('studentName').value);
+    localStorage.setItem("reg", document.getElementById('regNumber').value);
+    localStorage.setItem("major", document.getElementById('majorInput').value);
+    window.location.href = "Result.html";
+}
+
+applyLang();
+window.onresize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+</script>
+</body>
+</html>
+
         background: var(--card-bg);
         backdrop-filter: blur(15px);
         border: 1px solid rgba(255, 255, 255, 0.1);
