@@ -11,9 +11,8 @@
         --blue-soft: #38bdf8;
         --card-bg: rgba(15, 23, 42, 0.85);
         --danger: #ef4444;
- /* تنسيق أسماء المواد الجديد */
-.module h3 {
-    perspective: 1000px; /* ليعطي عمقاً للأنيميشن */
+ .module {
+    perspective: 1000px !important; /* هذا السطر هو مفتاح الـ 3D */
 }
 .module h3 {
     display: block;
@@ -26,9 +25,8 @@
 
 .module:hover h3 {
     color: var(--accent) !important;
-    transform: translateZ(20px) rotateX(10deg);
-    !important;
-   }
+    transform: translateZ(30px) rotateX(10deg) !important; /* بروز ومالية 3D */
+}
     body {
         font-family: 'Segoe UI', Tahoma, sans-serif;
         background: var(--primary);
@@ -81,7 +79,7 @@
         display: flex; justify-content: center; align-items: center;
         font-weight: bold; font-size: 14px;
     }
-    .module h3 { color: var(--blue-soft); margin: 0; font-size: 1.1rem; }
+    .module h3 { color: var(--blue-soft); margin: 0; font-size: 1.1rem; transition: all 0.4s ease; transform-style: preserve-3d; }
    
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; }
     label { display: block; font-size: 0.85rem; color: #cbd5e1; margin-bottom: 5px; }
