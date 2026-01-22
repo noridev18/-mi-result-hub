@@ -11,22 +11,7 @@
         --blue-soft: #38bdf8;
         --card-bg: rgba(15, 23, 42, 0.85);
         --danger: #ef4444;
- .module {
-    perspective: 1000px !important; /* هذا السطر هو مفتاح الـ 3D */
-}
-.module h3 {
-    display: block;
-    color: var(--blue-soft) !important; 
-    font-weight: bold;
-    margin-bottom: 10px;
-    transition: all 0.4s ease-out;
-    transform-style: preserve-3d;
-}
-
-.module:hover h3 {
-    color: var(--accent) !important;
-    transform: translateZ(30px) rotateX(10deg) !important; /* بروز ومالية 3D */
-}
+    }
     body {
         font-family: 'Segoe UI', Tahoma, sans-serif;
         background: var(--primary);
@@ -79,8 +64,8 @@
         display: flex; justify-content: center; align-items: center;
         font-weight: bold; font-size: 14px;
     }
-    .module h3 { color: var(--blue-soft); margin: 0; font-size: 1.1rem; transition: all 0.4s ease; transform-style: preserve-3d; }
-   
+    .module h3 { color: var(--blue-soft); margin: 0; font-size: 1.1rem; }
+    
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; }
     label { display: block; font-size: 0.85rem; color: #cbd5e1; margin-bottom: 5px; }
     
@@ -107,7 +92,7 @@
     .btn-lang {
         background: transparent; border: 1px solid var(--accent); color: var(--accent);
         padding: 5px 15px; position: absolute; top: 20px; left: 20px; z-index: 500; border-radius: 5px;
-  }
+    }    
 </style>
 </head>
 <body>
