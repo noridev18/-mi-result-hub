@@ -82,7 +82,6 @@
     }
     input:focus { outline: 2px solid var(--accent); border-color: transparent; }
 
-    /* --- تعديل عداد الزوار --- */
     .visitor-counter {
         position: absolute; top: 20px;
         background: rgba(212, 175, 55, 0.1);
@@ -92,11 +91,10 @@
         font-size: 0.75rem; z-index: 500;
         display: flex; align-items: center; gap: 8px;
     }
-    .visitor-counter i { font-size: 1.2rem; } /* حجم الأيقونة */
+    .visitor-counter i { font-size: 1.2rem; }
 
     [dir="rtl"] .visitor-counter { right: 20px; left: auto; }
     [dir="ltr"] .visitor-counter { left: 20px; right: auto; }
-    /* ------------------------ */
 
     .social-footer {
         background: rgba(15, 23, 42, 0.95);
@@ -154,7 +152,7 @@
 
 <div class="visitor-counter">
     <i class="fas fa-users"></i>
-    <span data-t="visitors">الزوار</span>: <span id="count">0</span>
+    <span data-t="visitors">الزوار</span>: <span id="count">...</span>
 </div>
 
 <button class="btn-lang" onclick="toggleLanguage()">AR / EN</button>
@@ -225,16 +223,21 @@ function applyLang() {
 }
 function toggleLanguage() { lang = lang === 'en' ? 'ar' : 'en'; localStorage.setItem('lang', lang); applyLang(); }
 
-// --- برمجة عداد الزوار الكلي ---
+// --- برمجة عداد الزوار الكلي (تعديل جذري للمصداقية) ---
 async function updateVisitors() {
     try {
-        const response = await fetch('https://api.countapi.xyz/hit/mi-result-hub-noureddine/visits');
+        // استخدام خدمة مستقرة وحديثة تضمن زيادة الرقم مع كل زيارة حقيقية
+        const response = await fetch('https://api.counterapi.dev/v1/noureddine_mi_hub_final/count/up');
         const data = await response.json();
-        document.getElementById('count').innerText = data.value;
-    } catch (e) { document.getElementById('count').innerText = "1"; }
+        document.getElementById('count').innerText = data.count;
+    } catch (e) { 
+        // حل احتياطي في حال انقطاع الإنترنت أو تعطل السيرفر
+        document.getElementById('count').innerText = "1"; 
+    }
 }
 updateVisitors();
 
+// --- تأثير الماتريكس الخلفي ---
 const canvas = document.getElementById('bg-canvas');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth; canvas.height = window.innerHeight;
@@ -255,6 +258,7 @@ function drawMatrix() {
 }
 setInterval(drawMatrix, 50);
 
+// --- وظائف إضافة المواد والحساب ---
 function addModule() {
     const div = document.createElement('div');
     div.className = 'module extra-item';
